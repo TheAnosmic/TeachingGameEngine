@@ -6,20 +6,21 @@
 #else
 	#include "WProgram.h"
 #endif
-#include "GameObject.h"
+#include "DynamicGameObject.h"
+#include "Bitmap.h"
 
-class Bullet : GameObject
+class Bullet : public DynaminGameObject
 {
 public:
 	explicit Bullet(const Point& position)
-		: GameObject(position)
+		: DynaminGameObject(position)
 	{
 	}
 
 	void ActOnFrame() override;
 	const Bitmap& GetBitmap() const override;
 	Point GetPosition() const override;
-
+	bool IsAlive() const override;
 };
 
 

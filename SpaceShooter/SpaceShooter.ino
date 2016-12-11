@@ -1,10 +1,9 @@
-#include "Bullet.h"
-#include "Bullter.h"
+#include "Enemy.h"
+#include "DynamicGameObject.h"
 #include "GameObject.h"
 #include "WorldState.h"
 #include "Display.h"
 #include "Player.h"
-#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
 #include "Input.h"
@@ -14,7 +13,7 @@
 Adafruit_SSD1306 displayImplementation(OLED_RESET);
 
 #define INPUT_LEFT 0
-#define INPUT_TRIGGER 1
+#define INPUT_TRIGGER 5
 #define INPUT_RIGHT 2
 
 #define TARGET_FRAME_RATE 20
@@ -52,9 +51,9 @@ unsigned long frameStartTime;
 
 void setup() {
 	Serial.begin(115200);
+	Serial.println("Start");
 
-//	WorldState::InitInstance(player);
-	Serial.println("Frame1");
+	WorldState::InitInstance(player);
 	setupInput();
 	setupDisplay();
 
@@ -65,28 +64,72 @@ void setup() {
 
 void loop() {
 
-	Serial.println("Frame");
 	Input input = getPlayerInput();
 	player.HandleInput(input);
 
+
 	display.StartFrame();
 	display.Draw(player.GitBitmap(), player.GetPosition());
-	display.EndFrame();
 
+	Point heartPoint;
+	heartPoint.x = 1;
+	heartPoint.y = 20;
+	display.Draw(player.GetHeart(0), heartPoint);
+	heartPoint.x += 8;
+	display.Draw(player.GetHeart(1), heartPoint);
+	heartPoint.x += 8;
+	display.Draw(player.GetHeart(2), heartPoint);
+
+	WorldState& worldState = *WorldState::instance();
+	for (int i = 0; i < worldState.GetLastGameObjectIndex(); ++i)
+	{
+		GameObject* gameObject = worldState.GetGameObjects()[i];
+		if (gameObject->IsAlive())
+		{
+			gameObject->ActOnFrame();
+		}
+		
+	}
+
+	for (int i = 0; i < worldState.GetLastGameObjectIndex(); ++i)
+	{
+		GameObject* gameObject = worldState.GetGameObjects()[i];
+		if (gameObject->IsAlive())
+		{
+			display.Draw(gameObject->GetBitmap(), gameObject->GetPosition());
+		}
+	}
+
+	DynaminGameObject* next = worldState.GetDynamicGameObjectsHead();
+	while (next != nullptr)
+	{
+		next->ActOnFrame();
+		next = next->GetNext();
+	}
+	next = worldState.GetDynamicGameObjectsHead();
+	while (next != nullptr)
+	{
+		display.Draw(next->GetBitmap(), next->GetPosition());
+		next = next->GetNext();
+	}
+
+	display.EndFrame();
 	unsigned long currentTime = millis();
 	unsigned long elapsedTime = currentTime - frameStartTime;
-
 	if (_FRAME_RATE_MS < elapsedTime)
 	{
 		Serial.print("Warning: target frame rate did not reached (");
 		Serial.print(_FRAME_RATE_MS);
-		Serial.print(" > ");
+		Serial.print(" < ");
 		Serial.print(elapsedTime);
 		Serial.println(")");
 	}
 	else
 	{
 		delay(_FRAME_RATE_MS - elapsedTime);
+//		Serial.print("Frame ");
+//		Serial.print(elapsedTime);
+//		Serial.println("ms");
 	}
 
 	frameStartTime = millis();

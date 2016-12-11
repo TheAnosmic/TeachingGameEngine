@@ -15,6 +15,7 @@ class Display
 {
 public:
 	explicit Display(Adafruit_SSD1306 &displayImplementation);
+	void draw_frame();
 	void StartFrame();
 	void EndFrame();
 	void Draw(const Bitmap& bitmap, const Point& position);

@@ -21,6 +21,7 @@ public:
 	virtual void ActOnFrame() = 0;
 	virtual const Bitmap& GetBitmap() const = 0;
 	virtual Point GetPosition() const = 0;
+	virtual bool IsAlive() const = 0;
 
 protected:
 	Point position;

@@ -23,16 +23,23 @@ class Player
 {
 public:
 	Player(int startPositionX, int startPositionY);
+	bool AllowedToShoot() const;
+	void UpdateShootTime();
 	void HandleInput(Input input);
 	Point GetPosition() const;
 	const Bitmap& GitBitmap() const;
+	const Bitmap& GetHeart(int i) const;
 private:
 	Point currentPosition;
 	int moveSpeed;
 	Bitmap defaultBitmap;
 	Bitmap leftStrafeBitmap;
 	Bitmap rightStrafeBitmap;
+	Bitmap heartFull;
+	Bitmap heartEmpty;
 	CurrentStrafe currentStrafe;
+	long long lastShootTime = 0;
+	const int shootInterval = 100;
 };
 
 #endif
