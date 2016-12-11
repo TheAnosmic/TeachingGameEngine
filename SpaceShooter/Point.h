@@ -2,6 +2,7 @@
 
 struct Point
 {
-	int x;
-	int y;
+	Point(short x, short y) : x(x), y(y) {}
+	short x;
+	short y;
 };

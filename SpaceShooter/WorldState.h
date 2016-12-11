@@ -8,8 +8,8 @@
 #endif
 
 #include "Player.h"
-#include "GameObject.h"
-#include "DynamicGameObject.h"
+#include "Bullet.h"
+#include "Enemy.h"
 
 class WorldState
 {
@@ -20,21 +20,12 @@ public:
 	static void InitInstance(const Player& player);
 	static WorldState* instance();
 	const Player &player;
-	/**
-	 * \brief Adds a game object to the currently lived objects
-	 * \param gameObject - pointer on the heap, WorldState will take ownership of the pointer.
-	 */
-	void AddGameObject(GameObject* gameObject);
-	void AddDynamicGameObject(DynaminGameObject* gameObject);
 
-	GameObject** GetGameObjects();
-	int GetLastGameObjectIndex() const;
-	DynaminGameObject* GetDynamicGameObjectsHead();
+	int enemiesSize;
+	Enemy* enemies;
+	int bulletsSize;
+	Bullet* bullets;
 
-private:
-	int gameObjectsIndex = 0;
-	GameObject** gameObjects = new GameObject*[30];
-	DynaminGameObject* dynamicObjectsHead;
 };
 
 

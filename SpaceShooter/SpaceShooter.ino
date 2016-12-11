@@ -1,4 +1,4 @@
-#include "Enemy.h"
+#include "Map.h"
 #include "DynamicGameObject.h"
 #include "GameObject.h"
 #include "WorldState.h"
@@ -16,7 +16,7 @@ Adafruit_SSD1306 displayImplementation(OLED_RESET);
 #define INPUT_TRIGGER 5
 #define INPUT_RIGHT 2
 
-#define TARGET_FRAME_RATE 20
+#define TARGET_FRAME_RATE 15
 #define _FRAME_RATE_MS (1000.0 / TARGET_FRAME_RATE)
 
 
@@ -45,8 +45,8 @@ Input getPlayerInput(void)
 
 Player player(SSD1306_LCDWIDTH / 2, SSD1306_LCDHEIGHT - 9);
 Display display(displayImplementation);
+Map enemiesMap(Point(50, 10));
 unsigned long frameStartTime;
-
 
 
 void setup() {
@@ -54,11 +54,29 @@ void setup() {
 	Serial.println("Start");
 
 	WorldState::InitInstance(player);
+	enemiesMap.AddEnemies(WorldState::instance());
 	setupInput();
 	setupDisplay();
 
 	frameStartTime = millis();
 
+}
+
+template <class T>
+void gameObjectFrame(T *gameObjects, int gameObjectSize);
+
+template <class T>
+void gameObjectFrame(T *gameObjects, int gameObjectSize)
+{
+	for (int i = 0; i < gameObjectSize; ++i)
+	{
+		T &gameObject = gameObjects[i];
+		if (gameObject.IsAlive())
+		{
+			gameObject.ActOnFrame();
+			display.Draw(gameObject.GetBitmap(), gameObject.GetPosition());
+		}
+	}
 }
 
 
@@ -69,11 +87,9 @@ void loop() {
 
 
 	display.StartFrame();
-	display.Draw(player.GitBitmap(), player.GetPosition());
+	display.Draw(player.GetBitmap(), player.GetPosition());
 
-	Point heartPoint;
-	heartPoint.x = 1;
-	heartPoint.y = 20;
+	Point heartPoint(1, 20);
 	display.Draw(player.GetHeart(0), heartPoint);
 	heartPoint.x += 8;
 	display.Draw(player.GetHeart(1), heartPoint);
@@ -81,36 +97,39 @@ void loop() {
 	display.Draw(player.GetHeart(2), heartPoint);
 
 	WorldState& worldState = *WorldState::instance();
-	for (int i = 0; i < worldState.GetLastGameObjectIndex(); ++i)
-	{
-		GameObject* gameObject = worldState.GetGameObjects()[i];
-		if (gameObject->IsAlive())
-		{
-			gameObject->ActOnFrame();
-		}
-		
-	}
+	Enemy* gameObjects = worldState.enemies;
+	int gameObjectSize = worldState.enemiesSize;
+	gameObjectFrame(gameObjects, gameObjectSize);
+	Bullet* bullets = worldState.bullets;
+	gameObjectSize = worldState.bulletsSize;
+	gameObjectFrame(bullets, gameObjectSize);
 
-	for (int i = 0; i < worldState.GetLastGameObjectIndex(); ++i)
+	for (int i = 0; i < worldState.bulletsSize; ++i)
 	{
-		GameObject* gameObject = worldState.GetGameObjects()[i];
-		if (gameObject->IsAlive())
+		Bullet &bullet = bullets[i];
+		if (!bullet.IsAlive())
 		{
-			display.Draw(gameObject->GetBitmap(), gameObject->GetPosition());
+			continue;
 		}
-	}
-
-	DynaminGameObject* next = worldState.GetDynamicGameObjectsHead();
-	while (next != nullptr)
-	{
-		next->ActOnFrame();
-		next = next->GetNext();
-	}
-	next = worldState.GetDynamicGameObjectsHead();
-	while (next != nullptr)
-	{
-		display.Draw(next->GetBitmap(), next->GetPosition());
-		next = next->GetNext();
+		const Point &bulletPoint = bullet.GetPosition();
+		for (int j = 0; j < worldState.enemiesSize; ++j)
+		{
+			Enemy &enemy = worldState.enemies[j];
+			if (!enemy.IsAlive())
+			{
+				continue;
+			}
+			const Point &enemyPoint = enemy.GetPosition();
+			if (enemyPoint.x <= bulletPoint.x &&
+				enemyPoint.x + Enemy::width >= bulletPoint.x &&
+				enemyPoint.y <= bulletPoint.y &&
+				enemyPoint.y + Enemy::height >= bulletPoint.y)
+			{
+				enemy.Destroy();
+				bullet.Destroy();
+				break;
+			}
+		}
 	}
 
 	display.EndFrame();

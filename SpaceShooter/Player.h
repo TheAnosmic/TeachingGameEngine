@@ -8,29 +8,29 @@
 #else
 	#include "WProgram.h"
 #endif
-#include "Point.h"
+#include "GameObject.h"
 #include "Input.h"
 #include "Bitmap.h"
 
-enum class CurrentStrafe
+enum class CurrentStrafe : byte
 {
 	CENTER,
 	LEFT,
 	RIGHT
 };
 
-class Player
+class Player : public GameObject
 {
 public:
-	Player(int startPositionX, int startPositionY);
+	Player(short x, short y);
 	bool AllowedToShoot() const;
 	void UpdateShootTime();
 	void HandleInput(Input input);
-	Point GetPosition() const;
-	const Bitmap& GitBitmap() const;
-	const Bitmap& GetHeart(int i) const;
+	const Bitmap& GetHeart(byte i) const;
+	void ActOnFrame() override;
+	const Bitmap& GetBitmap() const override;
+	bool IsAlive() const override;
 private:
-	Point currentPosition;
 	int moveSpeed;
 	Bitmap defaultBitmap;
 	Bitmap leftStrafeBitmap;

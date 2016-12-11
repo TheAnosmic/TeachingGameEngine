@@ -15,11 +15,22 @@ class DynaminGameObject : public GameObject
 public:
 	explicit DynaminGameObject(const Point& position);
 
-	DynaminGameObject* GetNext();
-	void SetNext(DynaminGameObject *next);
-
-private:
+	DynaminGameObject *prev;
 	DynaminGameObject *next;
+
+	void Detach()
+	{
+		if (prev != nullptr)
+		{
+			prev->next = next;
+		}
+		if (next != nullptr)
+		{
+			next->prev = prev;
+		}
+	}
+
+	virtual void Destroy() = 0;
 };
 
 #endif

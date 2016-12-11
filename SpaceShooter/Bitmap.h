@@ -10,11 +10,13 @@
 class Bitmap
 {
 public:
-	explicit Bitmap(const byte*);
-	int width;
-	int height;
+	explicit Bitmap(const byte*, byte width, byte height);
+	byte width;
+	byte height;
 	byte GetByte(byte position) const;
 	~Bitmap();
+
+	void DebugPrint() const;
 
 	static const Bitmap& OnePixel();
 

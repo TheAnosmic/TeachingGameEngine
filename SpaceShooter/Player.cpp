@@ -59,33 +59,17 @@ const byte heartEmptyBitmap[] PROGMEM =
 0b00010000 
 };
 
-Player::Player(int startPositionX, int startPositionY) :
-defaultBitmap(defaultPlayerBitmap), 
-leftStrafeBitmap(leftStrafePlayerBitmap), 
-rightStrafeBitmap(rightStrafePlayerBitmap),
-heartFull(heartFullBitmap),
-heartEmpty(heartEmptyBitmap)
+Player::Player(short x, short y) : GameObject(x, y),
+                               moveSpeed(2),
+                               defaultBitmap(defaultPlayerBitmap, 8, 8),
+                               leftStrafeBitmap(leftStrafePlayerBitmap, 8, 8),
+                               rightStrafeBitmap(rightStrafePlayerBitmap, 8, 8),
+                               heartFull(heartFullBitmap, 8, 6),
+                               heartEmpty(heartEmptyBitmap, 8, 6),
+							   currentStrafe(CurrentStrafe::CENTER)
 {
-	this->currentPosition.x = startPositionX;
-	this->currentPosition.y = startPositionY;
-	this->moveSpeed = 2;
-
-	this->defaultBitmap.width = 8;
-	this->defaultBitmap.height = 8;
-
-	this->leftStrafeBitmap.width = 8;
-	this->leftStrafeBitmap.height = 8;
-
-	this->rightStrafeBitmap.width = 8;
-	this->rightStrafeBitmap.height = 8;
-
-	this->heartEmpty.width = 8;
-	this->heartEmpty.height = 6;
-
-	this->heartFull.width = 8;
-	this->heartFull.height = 6;
-
 }
+
 
 bool Player::AllowedToShoot() const
 {
@@ -121,29 +105,22 @@ void Player::HandleInput(Input input)
 	{
 		this->currentStrafe = CurrentStrafe::CENTER;
 	}
-	this->currentPosition.x += movement;
+	this->position.x += movement;
 
 	if (input.trigger)
 	{
 		if (this->AllowedToShoot())
 		{
 			UpdateShootTime();
-			Point bulletPoint;
-			bulletPoint.y = currentPosition.y;
-			bulletPoint.x = currentPosition.x + 8 / 2;
-			Bullet* bullet = new Bullet(bulletPoint);
-			WorldState::instance()->AddDynamicGameObject(bullet);
+			Point bulletPoint(this->position.x + 8 / 2, this->position.y);
+			Bullet::Create(bulletPoint);
 		}
 	}
 	
 }
 
-Point Player::GetPosition() const
-{
-	return this->currentPosition;
-}
 
-const Bitmap& Player::GitBitmap() const
+const Bitmap& Player::GetBitmap() const
 {
 	switch (currentStrafe)
 	{
@@ -157,11 +134,20 @@ const Bitmap& Player::GitBitmap() const
 	}
 }
 
-const Bitmap& Player::GetHeart(int i) const
+bool Player::IsAlive() const
+{
+	return true;
+}
+
+const Bitmap& Player::GetHeart(byte i) const
 {
 	if (i < 2)
 	{
 		return heartFull;
 	}
 	return heartEmpty;
+}
+
+void Player::ActOnFrame()
+{
 }
