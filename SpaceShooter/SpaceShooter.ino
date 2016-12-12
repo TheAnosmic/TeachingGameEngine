@@ -15,6 +15,7 @@ Adafruit_SSD1306 displayImplementation(OLED_RESET);
 #define INPUT_LEFT 0
 #define INPUT_TRIGGER 5
 #define INPUT_RIGHT 2
+#define BUZZER A0
 
 #define TARGET_FRAME_RATE 15
 #define _FRAME_RATE_MS (1000.0 / TARGET_FRAME_RATE)
@@ -25,6 +26,7 @@ void setupInput()
 	pinMode(INPUT_LEFT, INPUT_PULLUP);
 	pinMode(INPUT_TRIGGER, INPUT_PULLUP);
 	pinMode(INPUT_RIGHT, INPUT_PULLUP);
+	pinMode(BUZZER, OUTPUT);
 }
 
 void setupDisplay()
@@ -59,7 +61,9 @@ void setup() {
 	setupDisplay();
 
 	frameStartTime = millis();
-
+	tone(BUZZER, 440);
+	delay(100);
+	noTone(BUZZER);
 }
 
 template <class T>
